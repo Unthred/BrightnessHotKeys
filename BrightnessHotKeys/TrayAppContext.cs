@@ -88,6 +88,16 @@ public class TrayAppContext : ApplicationContext
         menu.Items.Add("Set Brightness to 75%", null, (_, _) => SetBrightness(75));
         menu.Items.Add("Set Brightness to 100%", null, (_, _) => SetBrightness(100));
         menu.Items.Add(new ToolStripSeparator());
+    
+        // Add monitor selection submenu
+        var monitorsMenu = new ToolStripMenuItem("Monitor Selection");
+        RefreshMonitorList(monitorsMenu);
+        menu.Items.Add(monitorsMenu);
+    
+        // Add refresh monitors option
+        menu.Items.Add("Refresh Monitor List", null, (_, _) => RefreshMonitorList((ToolStripMenuItem)menu.Items[7]));
+        menu.Items.Add("Identify Monitors", null, (_, _) => BrightnessHelper.IdentifyMonitors());
+        menu.Items.Add(new ToolStripSeparator());
 
         // Configuration options
         menu.Items.Add("Set Hotkeys", null, OpenHotkeyDialog);
@@ -112,6 +122,62 @@ public class TrayAppContext : ApplicationContext
         return menu;
     }
 
+    /// <summary>
+    /// Refreshes the monitor list in the context menu
+    /// </summary>
+    private void RefreshMonitorList(ToolStripMenuItem monitorsMenu)
+    {
+        // Clear existing items
+        monitorsMenu.DropDownItems.Clear();
+    
+        // Get monitor information
+        var monitorInfo = BrightnessHelper.GetMonitorInfo();
+    
+        if (monitorInfo.Count == 0)
+        {
+            var noMonitorsItem = monitorsMenu.DropDownItems.Add("No monitors detected");
+            noMonitorsItem.Enabled = false;
+            return;
+        }
+    
+        // Add each monitor to the submenu
+        for (int i = 0; i < monitorInfo.Count; i++)
+        {
+            var monitorItem = new ToolStripMenuItem(monitorInfo[i])
+            {
+                CheckOnClick = true,
+                Checked = true // All monitors selected by default
+            };
+        
+            var index = i; // Capture for lambda
+            monitorItem.Click += (_, _) => 
+            {
+                BrightnessHelper.ToggleMonitor(index, monitorItem.Checked);
+                // Immediately apply current brightness to see the effect
+                BrightnessHelper.SetAllMonitorsBrightness(currentBrightness);
+            };
+        
+            monitorsMenu.DropDownItems.Add(monitorItem);
+        }
+    
+        // Add diagnostic info item
+        monitorsMenu.DropDownItems.Add(new ToolStripSeparator());
+        monitorsMenu.DropDownItems.Add("Show Detailed Monitor Info", null, ShowDetailedMonitorInfo);
+    }
+
+    /// <summary>
+    /// Shows detailed monitor information in a message box
+    /// </summary>
+    private void ShowDetailedMonitorInfo(object? sender, EventArgs e)
+    {
+        var detailedInfo = BrightnessHelper.GetDetailedMonitorInfo();
+        MessageBox.Show(
+            detailedInfo,
+            "Monitor Diagnostic Information",
+            MessageBoxButtons.OK,
+            MessageBoxIcon.Information
+        );
+    }
     /// <summary>
     /// Gets the application icon or falls back to system icon if not available
     /// </summary>
