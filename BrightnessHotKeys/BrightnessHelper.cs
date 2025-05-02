@@ -367,10 +367,7 @@ public static class BrightnessHelper
     /// <summary>
     /// A form to display the monitor identifier.
     /// </summary>
-    /// <summary>
-    /// A form to display the monitor identifier.
-    /// </summary>
-    private class MonitorIdentifierForm : Form
+    private sealed class MonitorIdentifierForm : Form
     {
         public MonitorIdentifierForm(int monitorIndex)
         {
@@ -382,7 +379,7 @@ public static class BrightnessHelper
             TopMost = true;
 
             // Set the size of the form
-            Size = new Size(400, 400); // Larger size for better visibility
+            Size = new Size(600, 600); // Larger size for better visibility
 
             // Center the form on the monitor
             var screen = Screen.AllScreens[monitorIndex - 1];
@@ -392,10 +389,10 @@ public static class BrightnessHelper
             // Add a label to display the monitor number
             var label = new Label
             {
-                Text = $"{monitorIndex}", // Only display the number
+                Text = $@"{monitorIndex}", // Only display the number
                 Dock = DockStyle.Fill,
                 TextAlign = ContentAlignment.MiddleCenter,
-                Font = new Font("Arial", 144, FontStyle.Bold), // 3x larger font size
+                Font = new Font("Arial", 432, FontStyle.Bold), // 3x larger font size (144 * 3 = 432)
                 ForeColor = Color.White // White text for visibility
             };
             Controls.Add(label);

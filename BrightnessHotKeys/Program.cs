@@ -6,7 +6,7 @@ namespace BrightnessHotKeys;
 internal static class Program
 {
     [STAThread]
-    static void Main()
+    public static void Main()
     {
         // Check if an instance is already running
         using var mutex = new Mutex(true, "BrightnessHotKeysAppMutex", out bool createdNew);

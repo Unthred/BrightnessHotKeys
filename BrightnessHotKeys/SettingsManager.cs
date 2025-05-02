@@ -21,12 +21,17 @@ public class SettingsManager
     /// <summary>
     /// Step size for brightness adjustments
     /// </summary>
-    public int BrightnessStepSize { get; set; } = 10;
+    public int BrightnessStepSize { get; set; } = 5;
 
     /// <summary>
     /// Whether to run the application at Windows startup
     /// </summary>
     public bool RunAtStartup { get; set; }
+
+    /// <summary>
+    /// Last brightness level set by the user
+    /// </summary>
+    public int LastBrightness { get; set; } = 50; // Default to 50%
 
     /// <summary>
     /// Updates this instance with values from another settings instance
@@ -41,13 +46,16 @@ public class SettingsManager
         BrightnessDownCtrl = other.BrightnessDownCtrl;
         BrightnessDownAlt = other.BrightnessDownAlt;
         BrightnessDownShift = other.BrightnessDownShift;
+        BrightnessStepSize = other.BrightnessStepSize;
+        RunAtStartup = other.RunAtStartup;
+        LastBrightness = other.LastBrightness; // Include LastBrightness
     }
 
 
     /// <summary>
     /// Path to the settings file in the application directory
     /// </summary>
-    private static string FilePath => Path.Combine(
+    public static string FilePath => Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
         "BrightnessHotkeys", "settings.json");
 

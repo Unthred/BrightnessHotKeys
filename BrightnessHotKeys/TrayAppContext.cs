@@ -44,6 +44,7 @@ public class TrayAppContext : ApplicationContext
 
         // Try to get current brightness level, or default to 50
         currentBrightness = BrightnessHelper.GetCurrentBrightness() ?? 50;
+        BrightnessHelper.SetAllMonitorsBrightness(currentBrightness);
 
         // Initialize hidden form for hotkey handling
         hiddenForm = new HiddenForm();
@@ -69,6 +70,14 @@ public class TrayAppContext : ApplicationContext
 
         // Register hotkeys
         RegisterHotKeys();
+    }
+
+    /// <summary>
+    /// Gets the current brightness level.
+    /// </summary>
+    public int GetCurrentBrightness()
+    {
+        return currentBrightness;
     }
 
     /// <summary>
@@ -125,7 +134,7 @@ public class TrayAppContext : ApplicationContext
     /// <summary>
     /// Refreshes the monitor list in the context menu
     /// </summary>
-    private void RefreshMonitorList(ToolStripMenuItem monitorsMenu)
+    public void RefreshMonitorList(ToolStripMenuItem monitorsMenu)
     {
         // Clear existing items
         monitorsMenu.DropDownItems.Clear();
@@ -141,7 +150,7 @@ public class TrayAppContext : ApplicationContext
         }
     
         // Add each monitor to the submenu
-        for (int i = 0; i < monitorInfo.Count; i++)
+        for (var i = 0; i < monitorInfo.Count; i++)
         {
             var monitorItem = new ToolStripMenuItem(monitorInfo[i])
             {
@@ -168,12 +177,12 @@ public class TrayAppContext : ApplicationContext
     /// <summary>
     /// Shows detailed monitor information in a message box
     /// </summary>
-    private void ShowDetailedMonitorInfo(object? sender, EventArgs e)
+    public void ShowDetailedMonitorInfo(object? sender, EventArgs? e)
     {
         var detailedInfo = BrightnessHelper.GetDetailedMonitorInfo();
         MessageBox.Show(
             detailedInfo,
-            "Monitor Diagnostic Information",
+            @"Monitor Diagnostic Information",
             MessageBoxButtons.OK,
             MessageBoxIcon.Information
         );
@@ -185,13 +194,19 @@ public class TrayAppContext : ApplicationContext
     {
         try
         {
-            string iconPath = Path.Combine(AppContext.BaseDirectory, "BrightnessHotKeys.ico");
-            return new Icon(iconPath);
+            var assembly = typeof(TrayAppContext).Assembly;
+            using var stream = assembly.GetManifestResourceStream("BrightnessHotKeys.BrightnessHotKeys.ico");
+            if (stream != null)
+            {
+                return new Icon(stream);
+            }
         }
         catch (Exception)
         {
-            return SystemIcons.Information;
+            return SystemIcons.Error;
         }
+
+        return SystemIcons.Exclamation;
     }
 
     /// <summary>
@@ -231,18 +246,20 @@ public class TrayAppContext : ApplicationContext
             using var key = Registry.CurrentUser.OpenSubKey(
                 @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run", true);
 
-            if (key != null)
+            if (key == null)
             {
-                if (enable)
-                {
-                    string appPath = Process.GetCurrentProcess().MainModule?.FileName ??
-                        System.Reflection.Assembly.GetExecutingAssembly().Location;
-                    key.SetValue("BrightnessHotkeys", $"\"{appPath}\"");
-                }
-                else
-                {
-                    key.DeleteValue("BrightnessHotkeys", false);
-                }
+                return;
+            }
+
+            if (enable)
+            {
+                var appPath = Process.GetCurrentProcess().MainModule?.FileName ??
+                              AppContext.BaseDirectory;
+                key.SetValue("BrightnessHotkeys", $"\"{appPath}\"");
+            }
+            else
+            {
+                key.DeleteValue("BrightnessHotkeys", false);
             }
         }
         catch (Exception ex)
@@ -321,7 +338,7 @@ public class TrayAppContext : ApplicationContext
     /// <summary>
     /// Sets the brightness level and applies it to all monitors
     /// </summary>
-    private void SetBrightness(int level)
+    public void SetBrightness(int level)
     {
         currentBrightness = Math.Clamp(level, 0, 100);
 
@@ -331,12 +348,18 @@ public class TrayAppContext : ApplicationContext
             trayIcon.ContextMenuStrip.Items[0].Text = $@"Current Brightness: {currentBrightness}%";
         }
 
-        // Show visual indicator (but no toast now)
+        // Show visual indicator
         brightnessIndicator.ShowBrightness(currentBrightness);
 
         var success = BrightnessHelper.SetAllMonitorsBrightness(currentBrightness);
 
-        if (!success)
+        if (success)
+        {
+            // Save the current brightness level to settings
+            settings.LastBrightness = currentBrightness;
+            settings.Save();
+        }
+        else
         {
             ShowNotification("Could not adjust brightness. Make sure DDC/CI is enabled in your monitor settings.");
         }
