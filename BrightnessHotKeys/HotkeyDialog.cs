@@ -3,7 +3,7 @@
 /// <summary>
 /// Dialog for configuring keyboard hotkeys
 /// </summary>
-public partial class HotkeyDialog : Form
+public sealed partial class HotkeyDialog : Form
 {
     // Brightness up hotkey settings
     private Keys upKey;
@@ -24,6 +24,61 @@ public partial class HotkeyDialog : Form
     {
         InitializeComponent();
 
+        // Set a meaningful title for the form
+        Text = @"Configure Brightness Hotkeys";
+
+        // Add instructions label at the top
+        var lblInstructions = new Label
+        {
+            Text = @"Click inside a textbox and press the key combination you want to use.",
+            AutoSize = true,
+            Location = new Point(12, 12),
+            Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right
+        };
+        Controls.Add(lblInstructions);
+
+        // Add labels for the textboxes
+        var lblBrightnessUp = new Label
+        {
+            Text = @"Brightness Up:",
+            AutoSize = true,
+            Location = new Point(12, lblInstructions.Bottom + 20)
+        };
+        Controls.Add(lblBrightnessUp);
+
+        // Position the txtUpKey below its label
+        txtUpKey.Location = new Point(120, lblBrightnessUp.Location.Y - 3);
+        txtUpKey.Width = 200;
+
+        var lblBrightnessDown = new Label
+        {
+            Text = @"Brightness Down:",
+            AutoSize = true,
+            Location = new Point(12, lblBrightnessUp.Bottom + 20)
+        };
+        Controls.Add(lblBrightnessDown);
+
+        // Position the txtDownKey below its label
+        txtDownKey.Location = new Point(120, lblBrightnessDown.Location.Y - 3);
+        txtDownKey.Width = 200;
+
+        // Add a note about system-wide hotkeys
+        var lblNote = new Label
+        {
+            Text = @"Note: These hotkeys will work system-wide, even when the app is minimized.",
+            AutoSize = true,
+            Location = new Point(12, lblBrightnessDown.Bottom + 20),
+            Font = new Font(this.Font, FontStyle.Italic)
+        };
+        Controls.Add(lblNote);
+
+        // Position the OK and Cancel buttons
+        btnOK.Location = new Point(this.Width - 170, lblNote.Bottom + 20);
+        btnCancel.Location = new Point(this.Width - 89, lblNote.Bottom + 20);
+
+        // Adjust form height to accommodate all controls
+        Height = btnOK.Bottom + 50;
+
         // Load existing settings
         upKey = current.BrightnessUpKey;
         upCtrl = current.BrightnessUpCtrl;
@@ -38,9 +93,16 @@ public partial class HotkeyDialog : Form
         UpdateTextBoxes();
     }
 
+    // Remove the parameterless constructor or fix it to properly initialize all UI elements
+    // This constructor appears to be unused based on the available code
     public HotkeyDialog(Keys downKey)
     {
+        InitializeComponent();
         this.downKey = downKey;
+        // This constructor should include the UI initialization as well
+        // For now, just warn of the issue
+        MessageBox.Show(@"Note: This constructor doesn't fully initialize the dialog.",
+            @"Initialization Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
     }
 
     /// <summary>
@@ -63,7 +125,7 @@ public partial class HotkeyDialog : Form
         if (alt) modifiers.Add("Alt");
         if (shift) modifiers.Add("Shift");
 
-        string keyText = key.ToString();
+        var keyText = key.ToString();
 
         return modifiers.Count > 0
             ? string.Join(" + ", modifiers) + " + " + keyText

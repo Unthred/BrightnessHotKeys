@@ -21,7 +21,7 @@ public class SettingsManager
     /// <summary>
     /// Step size for brightness adjustments
     /// </summary>
-    public int BrightnessStepSize { get; set; } = 5;
+    public int BrightnessStepSize { get; set; } = 2;
 
     /// <summary>
     /// Whether to run the application at Windows startup

@@ -18,7 +18,7 @@ public sealed class BrightnessIndicator : Form
 
             // Make the indicator smaller with reduced height
             var width = 250;
-            var height = 30; // 30% smaller than original 40px height
+            var height = 20; // 30% smaller than original 40px height
 
             FormBorderStyle = FormBorderStyle.None;
             StartPosition = FormStartPosition.Manual;
@@ -44,7 +44,7 @@ public sealed class BrightnessIndicator : Form
         Controls.Add(progressBar);
 
         // Shorter display time
-        timer = new System.Windows.Forms.Timer { Interval = 1000 };
+        timer = new System.Windows.Forms.Timer { Interval = 500 };
         timer.Tick += (_, _) => { timer.Stop(); Hide(); };
     }
 
