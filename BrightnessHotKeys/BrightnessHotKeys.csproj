@@ -37,10 +37,6 @@
 		<EmbeddedResource Include="BrightnessHotKeys.ico" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Folder Include="Tests\" />
-	</ItemGroup>
-
 	<!-- Auto-publish on Release build with trimming disabled -->
 	<Target Name="AutoPublish" AfterTargets="Build" Condition="'$(Configuration)' == 'Release' And '$(PublishingFromBuild)' != 'true'">
 		<Message Text="Auto-publishing single file executable..." Importance="high" />
